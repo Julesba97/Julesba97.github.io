@@ -1,0 +1,129 @@
+---
+title: "Convergence en distribution de la loi gamma vers la loi normale"
+author: "BA Souleymane"
+output: html_document
+runtime : shiny
+---
+
+# Enoncé:
+
+Lorsque r est grand la loi $\Gamma(\lambda,r)$ ressemble à une loi $\mathcal{N}(\frac{r}{\lambda},\frac{r}{\lambda^2})$
+c'est à dire $\frac{\lambda}{\sqrt{r}}\left( X - \frac{r}{\lambda} \right)\underset{r \to +\infty}{\overset{\mathcal L}{\longrightarrow}}\mathcal{N}(0,1)$
+
+# Rappels sur la loi gamma et la loi normale:
+
+## Loi gamma:
+
+On dit que suit la loi `gamma` de paramètres  r>0 et $\lambda$>0, notée $\Gamma(\lambda,r)$ si elle admet pour densité 
+$$f(x)=\frac{(\lambda x)^{r-1}}{\Gamma(r)}\lambda\exp(-\lambda x)\mathbb{1}{x\geq0}$$ avec  $\Gamma(r)=\int_0^{+\infty} x^{r-1}\exp(x)dx$ 
+
+Une telle variable aléatoire admet alors une espérance et une variance donnés par
+
+
+$$\mathbb{E}[X] = \frac{r}{\lambda}\ et\  Var(X)=\frac{r}{\lambda^2}$$
+tandis que sa fonction caractéristique est $$\phi_{X}(t)=(\frac{\lambda}{\lambda-it})^{r}$$
+
+## La loi normale:
+
+On dit qu'une variable aléatoire X suit la loi `normale` de paramètre m et $\sigma^2$ que l'on note $\mathcal{N}(m,\sigma^2)$ si elle est continue et admet pour densité 
+$$f(x)=\frac{1}{\sigma\sqrt{2\pi}}\exp\left(-\frac{(x-m)^2}{2\sigma^2}\right)$$ 
+
+Une telle variable aléatoire admet alors une espérance et une variance donnés par
+$$\mathbb{E}[X] = m \ et \  Var(X)=\sigma^2$$
+tandis que sa fonction caractéristique est $$\phi_{X}(t)=\exp\left(mit-\frac{\sigma^{2}t^2}{2}\right)$$
+
+
+# Preuve de l'énoncé:
+
+On pose $$Y = \frac{\lambda}{\sqrt{r}}\left(X - \frac{r}{\lambda}\right)$$ 
+Pou montrer que lorsque r tend vers +$\infty$ Y suit une loi normale centrée réduite il suffit de montrer que $$\phi_{Y}(t)\underset{r \to +\infty}{\longrightarrow}\exp(\frac{-t^2}{2})$$ où $\exp(\frac{-t^2}{2})$ est la fonction caractéristique de la loi normale centrée
+$$\begin{align}
+\phi_{Y}(t) &=\mathbb{E}[\exp(itY)]\\
+\phi_{Y}(t)& =\mathbb{E}\left[\exp\left(it\frac{\lambda}{\sqrt{r}}\left( X - \frac{r}{\lambda} \right)\right)\right]\\
+\phi_{Y}(t)& =\mathbb{E}\left[\exp\left(\frac{it \lambda}{\sqrt{r}}X - \frac{itr}{\sqrt{r}}\right)\right]\\
+\phi_{Y}(t)&=\exp\left(-it\sqrt{r}\right)\mathbb{E}\left[\exp\left(\frac{it \lambda}{\sqrt{r}}X \right)\right]\\
+\phi_{Y}(t)&=\exp\left(-it\sqrt{r}\right)\phi_{X}\left(\frac{t \lambda}{\sqrt{r}} \right)\\
+\phi_{Y}(t)&=\exp\left(-it\sqrt{r}\right)\left(\frac{\lambda}{\lambda - it\frac{\lambda}{\sqrt{r}}}\right)^{r}\\
+\phi_{Y}(t)&=\exp\left(-it\sqrt{r}\right)\left(1 -\frac{it}{\sqrt{r}}\right)^{-r}\\
+\phi_{Y}(t)&=\exp\left(-it\sqrt{r}\right)\exp\left(-r\log\left(1 - \frac{it}{\sqrt{r}}\right)\right)\\
+\phi_{Y}(t) &\underset{r \to +\infty}\approx\exp\left(-it\sqrt{r}\right)\exp\left(it\sqrt{r}\right)\exp(\frac{-t^2}{2})\\
+\phi_{Y}(t) &\underset{r \to +\infty}\approx\exp(\frac{-t^2}{2})
+\end{align}$$
+Donc on a bien que  $$\phi_{Y}(t)\underset{r \to +\infty}{\longrightarrow}\exp(\frac{-t^2}{2})$$
+
+
+# Simulation:
+
+
+Pour differentes valeurs de r et $\lambda$ on va superposer les courbes de densité de la loi $\Gamma(\lambda,r)$ et celle de la loi $\mathcal{N}(\frac{r}{\lambda},\frac{r}{\lambda^2})$ afin de remarquer leur ressemblance lorsque r devient de plus en plus grand. 
+
+ 
+
+
+```{r}
+library(shiny)
+library(shinythemes)
+```
+
+
+```{r echo=FALSE}
+ui<-fluidPage( 
+              
+               sidebarLayout(
+                 sidebarPanel(
+                   
+                   numericInput("r", label="valeur de r:", 10, min = 1, max = NA),
+                   numericInput("lambda", label="valeur de lambda:", 1, min = 0.1, max = NA),
+                   
+                   actionButton ( "Summission" , "soummetre:" , class  =  "btn-success" )
+                   
+                 ),
+                 mainPanel( 
+                   plotOutput("distPlot"))
+               )
+               
+               
+)   
+               
+```
+
+
+
+```{r,echo=FALSE}
+server<-function(input,output){
+  
+  graphique<-reactive({
+    a<-input$r*input$lambda
+    b<-sqrt(input$lambda*input$r^2)
+    X<-seq(0,(a+b),0.01)
+  
+    y<-dgamma(X,shape=input$r,rate =input$lambda)
+    y1<-dnorm(X,mean=input$r/input$lambda,sd=sqrt(input$r/input$lambda^2))
+    plot(X,y1,type='l',ylim=c(0,max(y)+0.01),col='blue',lwd=5,xlab=NA,ylab=NA,
+         main=paste("la distribution la loi normale en blue et celle de gamma en rouge "))
+    lines(X,y,type='l',col='red',lwd=5)
+    
+  })
+  output$distPlot<-renderPlot({
+    if(input$Summission>0){
+      isolate(graphique())
+      
+    }
+     
+    
+  })
+}
+
+```
+
+
+
+```{r}
+shinyApp(ui=ui,server = server)
+```
+
+
+
+
+
+

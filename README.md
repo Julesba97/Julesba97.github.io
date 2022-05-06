@@ -3,7 +3,7 @@
 Le but de cette d'application c'est d'abord:
 
 montrer la convergence  de la loi gamma vers la loi normale mathématiquement. 
-C'est à dire utiliser leur fonction caractéristique pour montrer leur convergence.
+C'est à dire utiliser leur fonction caractéristique pour montrer leur convergence en loi.
 
 Ensuite simuler des variables aleatoires pour différentes valeurs de paramètres de gamma(r,lamba).
 
